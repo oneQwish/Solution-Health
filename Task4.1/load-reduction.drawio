@@ -1,0 +1,47 @@
+<mxfile host="Electron">
+  <diagram name="Снижение нагрузки на 1С: копия базы полисов (C4 Level 1)" id="load-reduction">
+    <mxGraphModel dx="1550" dy="1114" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="668" pageHeight="395" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="n_gw" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=11;" value="&lt;b&gt;API Gateway&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;[system, новая]&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Единая точка входа для&lt;br&gt;приложения и портала&lt;/font&gt;" vertex="1">
+          <mxGeometry height="52" width="141" x="41" y="101.0" as="geometry" />
+        </mxCell>
+        <mxCell id="n_orch" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=11;" value="&lt;b&gt;Оркестратор записи&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;[system, новая]&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Ведёт сценарий записи;&lt;br&gt;первым шагом проверяет полис&lt;/font&gt;" vertex="1">
+          <mxGeometry height="52" width="180" x="247" y="101.0" as="geometry" />
+        </mxCell>
+        <mxCell id="n_pol" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=11;" value="&lt;b&gt;Сервис полисов&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;[system, новая]&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Фасад над 1С: проверка по копии,&lt;br&gt;синхронизация, онлайн-запрос&lt;br&gt;с тайм-аутом, повтором и circuit breaker&lt;/font&gt;" vertex="1">
+          <mxGeometry height="77" width="230" x="200" y="230.0" as="geometry" />
+        </mxCell>
+        <mxCell id="n_cache" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=11;" value="&lt;b&gt;Копия базы полисов&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;[system, новая]&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;PostgreSQL: реестр полисов ДМС&lt;br&gt;из 1С, обновляется раз в 5 минут&lt;/font&gt;" vertex="1">
+          <mxGeometry height="64" width="214" x="41" y="400.0" as="geometry" />
+        </mxCell>
+        <mxCell id="n_onec" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;strokeColor=none;fontColor=#ffffff;fontSize=11;" value="&lt;b&gt;1С: Полисы&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;[system]&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;HTTP-шлюз&lt;/font&gt;" vertex="1">
+          <mxGeometry height="43" width="105" x="500" y="417.0" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_0" edge="1" parent="1" source="n_gw" style="endArrow=block;html=1;strokeColor=#555555;fontSize=10;labelBackgroundColor=#ffffff;curved=1;" target="n_pol" value="Управление полисами&lt;br&gt;[REST, синхронно]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_1" edge="1" parent="1" source="n_orch" style="endArrow=block;html=1;strokeColor=#555555;fontSize=10;labelBackgroundColor=#ffffff;curved=1;" target="n_pol" value="Проверка полиса&lt;br&gt;[REST, синхронно]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_2" edge="1" parent="1" source="n_pol" style="startArrow=block;endArrow=block;html=1;strokeColor=#555555;fontSize=10;labelBackgroundColor=#ffffff;curved=1;" target="n_cache" value="Проверка полиса по копии&lt;br&gt;[SQL, синхронно]">
+          <mxGeometry relative="1" x="0" y="0" as="geometry">
+            </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_3" edge="1" parent="1" source="n_pol" style="endArrow=block;html=1;strokeColor=#555555;fontSize=10;labelBackgroundColor=#ffffff;curved=1;" target="n_onec" value="Онлайн-запрос, если полиса нет в копии,&lt;br&gt;и прикрепление полиса&lt;br&gt;[HTTP, синхронно, тайм-аут 3 с, circuit breaker]">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;verticalAlign=top;fontSize=11;" value="Легенда" vertex="1">
+          <mxGeometry height="93" width="164" x="463" y="80.0" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_existing" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;strokeColor=none;fontColor=#ffffff;fontSize=10;" value="Существующая система" vertex="1">
+          <mxGeometry height="26" width="144" x="473" y="108.0" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_new" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=10;" value="Новая система" vertex="1">
+          <mxGeometry height="26" width="144" x="473" y="142.0" as="geometry" />
+        </mxCell>
+      <mxCell id="title" value="Снижение нагрузки на 1С: копия базы полисов (C4 Level 1)" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fillColor=none;strokeColor=none;" vertex="1" parent="1"><mxGeometry x="40" y="10" width="580" height="36" as="geometry" /></mxCell><mxCell id="edge_sync" value="Изменения полисов раз в 5 минут&lt;br&gt;(задание синхронизации)&lt;br&gt;[HTTP, пакетно]" style="endArrow=block;html=1;strokeColor=#555555;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_onec" target="n_cache"><mxGeometry relative="1" as="geometry" /></mxCell></root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
