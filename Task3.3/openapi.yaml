@@ -1,0 +1,207 @@
+openapi: 3.0.3
+info:
+  title: API мобильного приложения «Здоровье+»
+  version: 1.0.0
+  description: Фрагмент спецификации. Список предстоящих записей пациента к врачу.
+servers:
+  - url: https://api.zdorovie-plus.example/api/v1
+tags:
+  - name: Appointments
+    description: Записи пациента к врачу
+paths:
+  /appointments:
+    get:
+      tags:
+        - Appointments
+      operationId: listAppointments
+      summary: Список записей пациента
+      description: >-
+        Возвращает записи текущего пациента. Пациент определяется по токену,
+        поэтому его идентификатор в запросе не передаётся. Записи отсортированы
+        по времени начала. Выдача постраничная (limit и offset).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Фильтр записей по статусу.
+          schema:
+            type: string
+            enum:
+              - upcoming
+            default: upcoming
+          example: upcoming
+        - name: limit
+          in: query
+          required: false
+          description: Сколько записей вернуть на странице.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          example: 20
+        - name: offset
+          in: query
+          required: false
+          description: Сколько записей пропустить от начала списка.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          example: 0
+      responses:
+        '200':
+          description: Список записей пациента.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentList'
+              example:
+                items:
+                  - id: 7b0f2c8e-5d3a-4f6b-9a41-2e8c1d7f5a90
+                    startAt: '2026-11-20T10:30:00+03:00'
+                    status: confirmed
+                    doctor:
+                      id: 3f1a9d52-8c7e-4b20-a6d4-0e5b7c9f1a33
+                      fullName: Иванова Анна Сергеевна
+                      specialty: Терапевт
+                    clinic:
+                      id: 0a7d3c41-6e2b-4f98-b1c5-8d9e2f4a6b17
+                      name: Здоровье+ на Таганской
+                      address: Москва, ул. Таганская, 12
+                  - id: 1c4e8a07-9b2d-4e55-8f13-6a0d2b7c4e19
+                    startAt: '2026-11-25T14:00:00+03:00'
+                    status: processing
+                    doctor:
+                      id: 9e6b3f10-2a8d-4c71-b5e9-1d4f8a2c6b07
+                      fullName: Петров Пётр Петрович
+                      specialty: Кардиолог
+                    clinic:
+                      id: 0a7d3c41-6e2b-4f98-b1c5-8d9e2f4a6b17
+                      name: Здоровье+ на Таганской
+                      address: Москва, ул. Таганская, 12
+                total: 2
+                limit: 20
+                offset: 0
+        '401':
+          description: Токен отсутствует, просрочен или недействителен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: UNAUTHORIZED
+                message: Токен отсутствует или недействителен
+                requestId: 5d8f0a7c-3b1e-4a92-8c6d-9e2f4b1a7d30
+        '500':
+          description: Внутренняя ошибка сервиса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: INTERNAL_ERROR
+                message: Внутренняя ошибка сервиса. Повторите запрос позже
+                requestId: a41c7e92-6d05-4b3f-8e1a-2c9d5f7b0e68
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Токен доступа (JWT), выданный сервисом аутентификации.
+  schemas:
+    Appointment:
+      type: object
+      required:
+        - id
+        - startAt
+        - status
+        - doctor
+        - clinic
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор записи.
+        startAt:
+          type: string
+          format: date-time
+          description: Время начала приёма.
+        status:
+          type: string
+          enum:
+            - processing
+            - awaiting_payment
+            - confirmed
+          description: Статус записи (в обработке, ожидает оплаты или подтверждена).
+        doctor:
+          $ref: '#/components/schemas/Doctor'
+        clinic:
+          $ref: '#/components/schemas/Clinic'
+    Doctor:
+      type: object
+      required:
+        - id
+        - fullName
+        - specialty
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        specialty:
+          type: string
+    Clinic:
+      type: object
+      required:
+        - id
+        - name
+        - address
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        address:
+          type: string
+          description: Адрес клиники, где пройдёт приём.
+    AppointmentList:
+      type: object
+      required:
+        - items
+        - total
+        - limit
+        - offset
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
+        total:
+          type: integer
+          description: Общее число записей, подходящих под фильтр.
+        limit:
+          type: integer
+        offset:
+          type: integer
+    Error:
+      type: object
+      required:
+        - code
+        - message
+        - requestId
+      properties:
+        code:
+          type: string
+          description: Машиночитаемый код ошибки.
+        message:
+          type: string
+          description: Описание ошибки для пользователя.
+        requestId:
+          type: string
+          description: Идентификатор запроса для поиска в логах и трассировке.
