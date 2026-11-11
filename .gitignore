@@ -1,0 +1,11 @@
+# Whitelist: игнорируем всё, кроме артефактов проектной работы
+/*
+!/.gitignore
+!/README.md
+!/Task*/
+
+/Task*/*
+!/Task*/*.md
+!/Task*/*.drawio
+!/Task*/*.png
+!/Task*/*.yaml
